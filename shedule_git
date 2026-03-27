@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>График смен</title>
+
+<style>
+body{
+    font-family:Arial;
+    margin:10px;
+}
+
+table{
+    border-collapse:collapse;
+    width:100%;
+}
+
+th,td{
+    border:1px solid #ccc;
+    padding:6px;
+    text-align:center;
+    min-width:35px;
+    cursor:pointer;
+}
+
+th{
+    background:#f3f3f3;
+}
+
+.name{
+    position:sticky;
+    left:0;
+    background:#fff;
+    font-weight:bold;
+    cursor:default;
+}
+
+.today{
+    background:#ffe9a8;
+}
+
+.shift-night{
+    background:#b7e4c7;
+    font-weight:bold;
+}
+
+.shift-day{
+    background:#a0c4ff;
+    font-weight:bold;
+}
+
+#todayInfo{
+    margin-top:15px;
+    font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<h3 id="monthTitle"></h3>
+
+<table id="scheduleTable">
+<thead>
+<tr id="headerRow">
+<th>Сотрудник</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<div id="todayInfo"></div>
+
+<script>
+
+const employees=[
+"Баранов А.",
+"Бочинин А.",
+"Кисляков П."
+];
+
+const now=new Date();
+const year=now.getFullYear();
+const month=now.getMonth();
+const today=now.getDate();
+
+const daysInMonth=new Date(year,month+1,0).getDate();
+
+const monthName=now.toLocaleString('ru-RU',{month:'long'});
+
+document.getElementById("monthTitle").innerText=
+"График смен — "+monthName+" "+year;
+
+const headerRow=document.getElementById("headerRow");
+
+for(let day=1;day<=daysInMonth;day++){
+
+const th=document.createElement("th");
+th.innerText=day;
+
+if(day===today){
+th.classList.add("today");
+}
+
+headerRow.appendChild(th);
+}
+
+const tbody=document.querySelector("#scheduleTable tbody");
+
+employees.forEach((employee,index)=>{
+
+const tr=document.createElement("tr");
+
+const nameTd=document.createElement("td");
+nameTd.innerText=employee;
+nameTd.classList.add("name");
+
+tr.appendChild(nameTd);
+
+for(let day=1;day<=daysInMonth;day++){
+
+const td=document.createElement("td");
+
+td.dataset.day=day;
+td.dataset.employee=employee;
+
+// начальный график
+let value="-";
+if((day+index)%3===0){
+value="Н";
+}
+
+setCell(td,value);
+
+if(day===today){
+td.classList.add("today");
+}
+
+td.addEventListener("click",function(){
+
+let current=td.innerText;
+
+let next="-";
+if(current==="-" ) next="Д";
+else if(current==="Д") next="Н";
+else if(current==="Н") next="-";
+
+setCell(td,next);
+
+updateToday();
+
+});
+
+tr.appendChild(td);
+}
+
+tbody.appendChild(tr);
+
+});
+
+function setCell(td,value){
+
+td.innerText=value;
+td.classList.remove("shift-night","shift-day");
+
+if(value==="Н"){
+td.classList.add("shift-night");
+}
+else if(value==="Д"){
+td.classList.add("shift-day");
+}
+
+}
+
+function updateToday(){
+
+let list=[];
+
+document.querySelectorAll("td[data-day='"+today+"']").forEach(cell=>{
+
+if(cell.innerText==="Н"||cell.innerText==="Д"){
+list.push(cell.dataset.employee+" ("+cell.innerText+")");
+}
+
+});
+
+const info=document.getElementById("todayInfo");
+
+if(list.length){
+info.innerText="Сегодня работают: "+list.join(", ");
+}else{
+info.innerText="Сегодня никто не работает";
+}
+
+}
+
+updateToday();
+
+</script>
+
+</body>
+</html>
